@@ -21,7 +21,6 @@
 #include "ai_common.h"
 
 #include <algorithm>
-#include <array>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -122,7 +121,7 @@ void AI::OptimizeTroopsOrder( Army & army )
         }
     }
 
-    assert( archers.size() + others.size() <= 5 );
+    assert( archers.size() + others.size() <= Army::maximumTroopCount );
 
     // Sort troops by tactical priority. For melee units, the order of comparison is as follows:
     // 1. Comparison by speed (faster units first);
@@ -143,41 +142,43 @@ void AI::OptimizeTroopsOrder( Army & army )
     // Archers are sorted solely by strength
     std::sort( archers.begin(), archers.end(), []( const Troop & left, const Troop & right ) { return left.GetStrength() < right.GetStrength(); } );
 
-    std::array<size_t, 5> slotOrder = { 2, 1, 3, 0, 4 };
-    switch ( archers.size() ) {
-    case 1:
-        if ( others.size() == 1 ) {
-            slotOrder = { 0, 2, 1, 3, 4 };
+    // The slots are filled with the archers first and then with the melee units, strongest first in both cases.
+    // Archers are put into the outer slots, which end up at the edges of the battlefield where fewer enemies can
+    // reach them, while the melee units are kept towards the centre. The original game hard codes one order per
+    // combination of archers and melee units because it always has five slots; the arrangement below expresses the
+    // same intent for any number of slots and reproduces the original order for an army without archers.
+    std::vector<bool> isSlotTaken( Army::maximumTroopCount, false );
+    std::vector<size_t> slotOrder;
+    slotOrder.reserve( Army::maximumTroopCount );
+
+    const int32_t slotCount = static_cast<int32_t>( Army::maximumTroopCount );
+
+    const auto takeSlot = [&isSlotTaken, &slotOrder, slotCount]( const int32_t slot ) {
+        if ( slot < 0 || slot >= slotCount || isSlotTaken[slot] ) {
+            return;
         }
-        else {
-            slotOrder = { 0, 1, 2, 3, 4 };
-        }
-        break;
-    case 2:
-        if ( others.size() == 3 ) {
-            slotOrder = { 0, 2, 3, 1, 4 };
-        }
-        else {
-            slotOrder = { 0, 4, 2, 1, 3 };
-        }
-        break;
-    case 3:
-        if ( others.size() == 1 ) {
-            slotOrder = { 0, 4, 2, 1, 3 };
-        }
-        else {
-            slotOrder = { 0, 3, 2, 1, 4 };
-        }
-        break;
-    case 4:
-        slotOrder = { 0, 4, 2, 3, 1 };
-        break;
-    case 5:
-        slotOrder = { 0, 4, 1, 2, 3 };
-        break;
-    default:
-        break;
+
+        isSlotTaken[slot] = true;
+        slotOrder.push_back( static_cast<size_t>( slot ) );
+    };
+
+    // Archers: the outermost slots, alternating between the two ends of the army.
+    for ( size_t i = 0; i < archers.size(); ++i ) {
+        const int32_t distanceFromEnd = static_cast<int32_t>( i / 2 );
+
+        takeSlot( ( i % 2 == 0 ) ? distanceFromEnd : slotCount - 1 - distanceFromEnd );
     }
+
+    // Everything else: from the centre outwards. Every remaining slot has to end up here, otherwise the units that
+    // do not get one would be lost, because the army has just been emptied.
+    const int32_t centreSlot = ( slotCount - 1 ) / 2;
+
+    for ( int32_t offset = 0; offset <= slotCount; ++offset ) {
+        takeSlot( centreSlot - offset );
+        takeSlot( centreSlot + offset );
+    }
+
+    assert( slotOrder.size() == Army::maximumTroopCount );
 
     army.Clean();
 
