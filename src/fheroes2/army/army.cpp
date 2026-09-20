@@ -1037,6 +1037,22 @@ Army::Army( const Maps::Tile & tile )
     setFromTile( tile );
 }
 
+void Army::setGuardianTroops( const std::initializer_list<Troop> troops )
+{
+    assert( troops.size() > 0 && troops.size() <= size() );
+
+    // Centre the guardians the same way Army::ArrangeForBattle does. Without this a garrison that does not fill every
+    // slot would bunch up against one edge of the battlefield and leave the opposite rows empty.
+    size_t slot = ( size() - troops.size() ) / 2;
+
+    for ( const Troop & troop : troops ) {
+        assert( at( slot ) != nullptr );
+
+        at( slot )->Set( troop );
+        ++slot;
+    }
+}
+
 void Army::setFromTile( const Maps::Tile & tile )
 {
     assert( commander == nullptr );
@@ -1053,19 +1069,19 @@ void Army::setFromTile( const Maps::Tile & tile )
 
     switch ( tile.getMainObjectType( false ) ) {
     case MP2::OBJ_PYRAMID:
-        at( 0 )->Set( Monster::VAMPIRE_LORD, 10 );
-        at( 1 )->Set( Monster::ROYAL_MUMMY, 10 );
-        at( 2 )->Set( Monster::ROYAL_MUMMY, 10 );
-        at( 3 )->Set( Monster::ROYAL_MUMMY, 10 );
-        at( 4 )->Set( Monster::VAMPIRE_LORD, 10 );
+        setGuardianTroops( { { Monster::VAMPIRE_LORD, 10 },
+                             { Monster::ROYAL_MUMMY, 10 },
+                             { Monster::ROYAL_MUMMY, 10 },
+                             { Monster::ROYAL_MUMMY, 10 },
+                             { Monster::VAMPIRE_LORD, 10 } } );
         break;
 
     case MP2::OBJ_GRAVEYARD:
-        at( 0 )->Set( Monster::MUTANT_ZOMBIE, 20 );
-        at( 1 )->Set( Monster::MUTANT_ZOMBIE, 20 );
-        at( 2 )->Set( Monster::MUTANT_ZOMBIE, 20 );
-        at( 3 )->Set( Monster::MUTANT_ZOMBIE, 20 );
-        at( 4 )->Set( Monster::MUTANT_ZOMBIE, 20 );
+        setGuardianTroops( { { Monster::MUTANT_ZOMBIE, 20 },
+                             { Monster::MUTANT_ZOMBIE, 20 },
+                             { Monster::MUTANT_ZOMBIE, 20 },
+                             { Monster::MUTANT_ZOMBIE, 20 },
+                             { Monster::MUTANT_ZOMBIE, 20 } } );
         break;
 
     case MP2::OBJ_SHIPWRECK: {
@@ -1133,19 +1149,13 @@ void Army::setFromTile( const Maps::Tile & tile )
         break;
 
     case MP2::OBJ_CITY_OF_DEAD:
-        at( 0 )->Set( Monster::ZOMBIE, 20 );
-        at( 1 )->Set( Monster::VAMPIRE_LORD, 5 );
-        at( 2 )->Set( Monster::POWER_LICH, 5 );
-        at( 3 )->Set( Monster::VAMPIRE_LORD, 5 );
-        at( 4 )->Set( Monster::ZOMBIE, 20 );
+        setGuardianTroops(
+            { { Monster::ZOMBIE, 20 }, { Monster::VAMPIRE_LORD, 5 }, { Monster::POWER_LICH, 5 }, { Monster::VAMPIRE_LORD, 5 }, { Monster::ZOMBIE, 20 } } );
         break;
 
     case MP2::OBJ_TROLL_BRIDGE:
-        at( 0 )->Set( Monster::TROLL, 4 );
-        at( 1 )->Set( Monster::WAR_TROLL, 4 );
-        at( 2 )->Set( Monster::TROLL, 4 );
-        at( 3 )->Set( Monster::WAR_TROLL, 4 );
-        at( 4 )->Set( Monster::TROLL, 4 );
+        setGuardianTroops(
+            { { Monster::TROLL, 4 }, { Monster::WAR_TROLL, 4 }, { Monster::TROLL, 4 }, { Monster::WAR_TROLL, 4 }, { Monster::TROLL, 4 } } );
         break;
 
     case MP2::OBJ_DRAGON_CITY: {
@@ -1157,19 +1167,16 @@ void Army::setFromTile( const Maps::Tile & tile )
             }
         }
 
-        at( 0 )->Set( Monster::GREEN_DRAGON, monsterCount );
-        at( 1 )->Set( Monster::GREEN_DRAGON, monsterCount );
-        at( 2 )->Set( Monster::GREEN_DRAGON, monsterCount );
-        at( 3 )->Set( Monster::RED_DRAGON, monsterCount );
-        at( 4 )->Set( Monster::BLACK_DRAGON, monsterCount );
+        setGuardianTroops( { { Monster::GREEN_DRAGON, monsterCount },
+                             { Monster::GREEN_DRAGON, monsterCount },
+                             { Monster::GREEN_DRAGON, monsterCount },
+                             { Monster::RED_DRAGON, monsterCount },
+                             { Monster::BLACK_DRAGON, monsterCount } } );
         break;
     }
 
     case MP2::OBJ_DAEMON_CAVE:
-        at( 0 )->Set( Monster::EARTH_ELEMENT, 2 );
-        at( 1 )->Set( Monster::EARTH_ELEMENT, 2 );
-        at( 2 )->Set( Monster::EARTH_ELEMENT, 2 );
-        at( 3 )->Set( Monster::EARTH_ELEMENT, 2 );
+        setGuardianTroops( { { Monster::EARTH_ELEMENT, 2 }, { Monster::EARTH_ELEMENT, 2 }, { Monster::EARTH_ELEMENT, 2 }, { Monster::EARTH_ELEMENT, 2 } } );
         break;
 
     default:
@@ -1942,19 +1949,24 @@ void Army::ArrangeForBattle( const Monster & monster, const uint32_t monstersCou
 
 void Army::ArrangeForBattle( const Monster & monster, const uint32_t monstersCount, const int32_t tileIndex, const bool allowUpgrade )
 {
+    // Number of stacks a neutral army on the map is split into. In the original game this is the number of army slots,
+    // but here the player has more of them, and following the slot count would only strengthen the neutral armies:
+    // the same monsters split into more stacks retaliate more often and block more of the battlefield, while the
+    // player gains nothing from it. Raise this to Army::maximumTroopCount to let neutral armies use every slot too.
+    constexpr uint32_t neutralArmyStackCount = 5;
+
+    static_assert( neutralArmyStackCount <= maximumTroopCount, "A neutral army cannot have more stacks than the army has slots." );
+
     uint32_t stacksCount = 0;
 
     // Archers should always be divided into as many stacks as possible
     if ( monster.isArchers() ) {
-        stacksCount = maximumTroopCount;
+        stacksCount = neutralArmyStackCount;
     }
     else {
         Rand::PCG32 seededGen( world.GetMapSeed() + static_cast<uint32_t>( tileIndex ) );
 
-        // In the original game this is 3 to 5, 5 being the number of slots an army has. The upper bound follows the
-        // number of slots so that neutral armies keep using the whole battlefield the way they do in the original.
-        // Pin it to 5 here to leave neutral armies untouched when the player's armies get more slots.
-        stacksCount = Rand::GetWithGen( 3, maximumTroopCount, seededGen );
+        stacksCount = Rand::GetWithGen( 3, neutralArmyStackCount, seededGen );
     }
 
     ArrangeForBattle( monster, monstersCount, stacksCount );

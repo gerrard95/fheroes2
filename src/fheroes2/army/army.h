@@ -25,6 +25,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <functional>
 #include <string>
 #include <vector>
@@ -202,6 +203,10 @@ public:
     // of the commanding hero's faction.
     void Reset( const bool defaultArmy = false );
     void setFromTile( const Maps::Tile & tile );
+
+    // Places a fixed guardian army in the middle slots, the way Army::ArrangeForBattle does, so that a garrison of
+    // fewer troops than the army has slots still lines up with the centre of the battlefield.
+    void setGuardianTroops( const std::initializer_list<Troop> troops );
 
     PlayerColor GetColor() const;
     int GetControl() const override;

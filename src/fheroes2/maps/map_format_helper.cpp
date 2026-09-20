@@ -72,7 +72,8 @@ namespace
         const Maps::Map_Format::TileObjectInfo * info{ nullptr };
     };
 
-    void loadArmyFromMetadata( Army & army, const std::array<int32_t, 5> & unitType, const std::array<int32_t, 5> & unitCount )
+    void loadArmyFromMetadata( Army & army, const std::array<int32_t, Maps::Map_Format::savedTroopCount> & unitType,
+                               const std::array<int32_t, Maps::Map_Format::savedTroopCount> & unitCount )
     {
         std::vector<Troop> troops( unitType.size() );
         for ( size_t i = 0; i < troops.size(); ++i ) {
@@ -80,16 +81,19 @@ namespace
             troops[i] = Troop{ unitType[i], static_cast<uint32_t>( unitCount[i] ) };
         }
 
+        // An army can have more slots than a map stores troops for. Troops::Assign fills as many of them as there are
+        // troops and leaves the rest empty.
         army.Assign( troops.data(), troops.data() + troops.size() );
     }
 
-    void saveArmyToMetadata( const Army & army, std::array<int32_t, 5> & unitType, std::array<int32_t, 5> & unitCount )
+    void saveArmyToMetadata( const Army & army, std::array<int32_t, Maps::Map_Format::savedTroopCount> & unitType,
+                             std::array<int32_t, Maps::Map_Format::savedTroopCount> & unitCount )
     {
-        const size_t armySize = army.Size();
-        assert( unitType.size() == armySize );
+        // A map stores a fixed number of troops, which can be fewer than the army has slots. Writing every slot would
+        // run past the end of the metadata arrays, so only the slots a map has room for are saved.
+        const size_t savedCount = std::min( army.Size(), unitType.size() );
 
-        // Update army metadata.
-        for ( size_t i = 0; i < armySize; ++i ) {
+        for ( size_t i = 0; i < savedCount; ++i ) {
             const Troop * troop = army.GetTroop( i );
             assert( troop != nullptr );
 

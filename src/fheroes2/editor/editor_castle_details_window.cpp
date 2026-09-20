@@ -715,8 +715,12 @@ namespace Editor
         // Load army from metadata.
         Maps::loadCastleArmy( castleArmy, castleMetadata );
         ArmyBar armyBar( &castleArmy, true, false, true, false );
-        armyBar.setTableSize( { ( static_cast<int32_t>( Army::maximumTroopCount ) + 1 ) / 2, 2 } );
-        armyBar.setCustomItemsCountInRow( { static_cast<int32_t>( Army::maximumTroopCount ) / 2, ( static_cast<int32_t>( Army::maximumTroopCount ) + 1 ) / 2 } );
+        // A map stores fewer troops than an army has slots, so the editor only offers the ones that can actually be
+        // saved. The remaining slots start the game empty and are filled in by the player.
+        const int32_t editableTroopCount = static_cast<int32_t>( Maps::Map_Format::savedTroopCount );
+
+        armyBar.setTableSize( { ( editableTroopCount + 1 ) / 2, 2 } );
+        armyBar.setCustomItemsCountInRow( { editableTroopCount / 2, ( editableTroopCount + 1 ) / 2 } );
         armyBar.setInBetweenItemsOffset( { 3, 3 } );
         armyBar.setRenderingOffset( { dialogRoi.x + rightPartOffsetX + 33, dialogRoi.y + 332 } );
         armyBar.Redraw( display );

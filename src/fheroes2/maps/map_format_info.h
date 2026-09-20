@@ -59,6 +59,11 @@ namespace Maps::Map_Format
     constexpr size_t messageCharLimit{ 999 };
     constexpr size_t nameCharLimit{ 30 };
 
+    // Number of troops a map stores for a hero or a castle. It matches the original map format and is deliberately
+    // independent of Army::maximumTroopCount: changing it would change the map file format and make existing maps
+    // unreadable. Army slots beyond this count cannot be set up in the editor and start the game empty.
+    constexpr size_t savedTroopCount{ 5 };
+
     struct CastleMetadata
     {
         // Color, type and whether it is castle or town must come from ObjectInfo to make sure
@@ -68,8 +73,8 @@ namespace Maps::Map_Format
         std::string customName;
 
         // Defending monsters that are set in the castle. Type ( < 0 ) means default units (for neutral race) and 0 means an empty army slot.
-        std::array<int32_t, 5> defenderMonsterType{ 0 };
-        std::array<int32_t, 5> defenderMonsterCount{ 0 };
+        std::array<int32_t, savedTroopCount> defenderMonsterType{ 0 };
+        std::array<int32_t, savedTroopCount> defenderMonsterCount{ 0 };
 
         // Whether the buildings are customized.
         bool customBuildings{ false };
@@ -118,8 +123,8 @@ namespace Maps::Map_Format
         int32_t customPortrait{ 0 };
 
         // Custom hero army. Type 0 means not set.
-        std::array<int32_t, 5> armyMonsterType{ 0 };
-        std::array<int32_t, 5> armyMonsterCount{ 0 };
+        std::array<int32_t, savedTroopCount> armyMonsterType{ 0 };
+        std::array<int32_t, savedTroopCount> armyMonsterCount{ 0 };
 
         // Artifacts with metadata. Type 0 means not set.
         std::array<int32_t, 14> artifact{ 0 };
