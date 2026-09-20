@@ -715,8 +715,8 @@ namespace Editor
         // Load army from metadata.
         Maps::loadCastleArmy( castleArmy, castleMetadata );
         ArmyBar armyBar( &castleArmy, true, false, true, false );
-        armyBar.setTableSize( { 3, 2 } );
-        armyBar.setCustomItemsCountInRow( { 2, 3 } );
+        armyBar.setTableSize( { ( static_cast<int32_t>( Army::maximumTroopCount ) + 1 ) / 2, 2 } );
+        armyBar.setCustomItemsCountInRow( { static_cast<int32_t>( Army::maximumTroopCount ) / 2, ( static_cast<int32_t>( Army::maximumTroopCount ) + 1 ) / 2 } );
         armyBar.setInBetweenItemsOffset( { 3, 3 } );
         armyBar.setRenderingOffset( { dialogRoi.x + rightPartOffsetX + 33, dialogRoi.y + 332 } );
         armyBar.Redraw( display );

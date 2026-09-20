@@ -34,6 +34,10 @@
 class Army;
 class ArmyTroop;
 
+// Width of a mini army slot that still lets all Army::maximumTroopCount slots fit into the space the dialog
+// artwork reserves for the bar. Returns 'originalWidth' when there is enough room for all of them at that size.
+int32_t getMiniArmySlotWidth( const int32_t availableWidth, const int32_t spacing, const int32_t originalWidth );
+
 class ArmyBar : public Interface::ItemsActionBar<ArmyTroop>
 {
 public:
@@ -82,8 +86,21 @@ protected:
 private:
     bool AbleToRedistributeArmyOnRightMouseSingleClick( const ArmyTroop & troop );
 
+    // Draws the given full-size slot image into 'pos', scaled down and centred if the bar uses reduced slots.
+    void _drawFullSizeSlot( const fheroes2::Image & slot, const fheroes2::Rect & pos, fheroes2::Image & output ) const;
+
+    // Rectangle occupied by the slot image inside a cell of the bar. They differ only when the slots are scaled down.
+    fheroes2::Rect _slotRoi( const fheroes2::Rect & pos ) const;
+
     Army * _army{ nullptr };
     fheroes2::Image backsf;
+
+    // Size at which a full-size slot is drawn. Equal to the size of ICN::STRIP frame 2 unless the army has too many
+    // slots to fit the bar area of the original artwork, in which case the tiles are scaled down.
+    fheroes2::Size _fullSizeSlotSize;
+
+    bool _slotsAreScaled{ false };
+
     bool use_mini_sprite{ false };
     bool read_only{ false };
     bool can_change{ false };

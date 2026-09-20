@@ -210,9 +210,8 @@ namespace
         fheroes2::Copy( port, 0, 0, image, 5, 5, port.width(), port.height() );
 
         ArmyBar armyBar( &hero->GetArmy(), false, false );
-        armyBar.setTableSize( { 5, 1 } );
+        armyBar.setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
         armyBar.setRenderingOffset( { 112, 5 } );
-        armyBar.setInBetweenItemsOffset( { 6, 0 } );
         armyBar.Redraw( image );
     }
 }
@@ -356,9 +355,8 @@ Castle::CastleDialogReturnValue Castle::OpenDialog( const bool openConstructionW
     RedrawIcons( *this, ( alphaHero == 0 ) ? nullptr : hero, dialogRoi.getPosition() );
 
     auto setArmyBarParameters = []( ArmyBar & armyBar, const fheroes2::Point & offset ) {
-        armyBar.setTableSize( { 5, 1 } );
+        armyBar.setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
         armyBar.setRenderingOffset( offset );
-        armyBar.setInBetweenItemsOffset( { 6, 0 } );
     };
 
     // Castle army (top) bar.

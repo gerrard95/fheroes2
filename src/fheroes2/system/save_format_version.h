@@ -27,6 +27,9 @@ enum SaveFileFormat : uint16_t
     // !!! IMPORTANT !!!
     // If you're adding a new version you must assign it to CURRENT_FORMAT_VERSION located at the bottom.
     // If you're removing an old version you must assign the oldest available to LAST_SUPPORTED_FORMAT_VERSION located at the bottom.
+    // Armies were extended from 5 to Army::maximumTroopCount slots. Saves older than this store fewer troops per army
+    // and are padded with empty slots on load, see operator>>( IStreamBase &, Army & ).
+    FORMAT_VERSION_MOD_ARMY_SLOTS = 10035,
     FORMAT_VERSION_1180_RELEASE = 10034,
     FORMAT_VERSION_1150_RELEASE = 10033,
     FORMAT_VERSION_1111_RELEASE = 10032,
@@ -55,5 +58,5 @@ enum SaveFileFormat : uint16_t
 
     LAST_SUPPORTED_FORMAT_VERSION = FORMAT_VERSION_1005_RELEASE,
 
-    CURRENT_FORMAT_VERSION = FORMAT_VERSION_1180_RELEASE
+    CURRENT_FORMAT_VERSION = FORMAT_VERSION_MOD_ARMY_SLOTS
 };

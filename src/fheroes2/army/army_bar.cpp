@@ -43,6 +43,7 @@
 #include "monster.h"
 #include "pal.h"
 #include "race.h"
+#include "settings.h"
 #include "tools.h"
 #include "translations.h"
 #include "ui_dialog.h"
@@ -52,6 +53,14 @@
 
 namespace
 {
+    // The hero and castle dialog backgrounds reserve a strip of this width for a full-size army bar. It fits exactly
+    // five slots of ICN::STRIP frame 2 ( 5 * 82 + 4 * 6 == 434 ), which is what the original game has. An army with
+    // more slots than that only fits if the tiles are scaled down, see ArmyBar::ArmyBar().
+    const int32_t fullSizeBarAreaWidth{ 434 };
+
+    // Horizontal space kept free around a scaled down slot so that adjacent slots stay visually separated.
+    const int32_t fullSizeSlotSpacing{ 6 };
+
     void RedistributeArmy( ArmyTroop & troopFrom, ArmyTroop & troopTarget, Army * armyTarget )
     {
         const Army * armyFrom = troopFrom.GetArmy();
@@ -186,6 +195,19 @@ namespace
     }
 }
 
+int32_t getMiniArmySlotWidth( const int32_t availableWidth, const int32_t spacing, const int32_t originalWidth )
+{
+    const int32_t slotCount = static_cast<int32_t>( Army::maximumTroopCount );
+
+    assert( slotCount > 0 && availableWidth > 0 && originalWidth > 0 );
+
+    const int32_t width = ( availableWidth - ( slotCount - 1 ) * spacing ) / slotCount;
+
+    assert( width > 0 );
+
+    return std::min( width, originalWidth );
+}
+
 ArmyBar::ArmyBar( Army * ptr, const bool miniSprites, const bool readOnly, const bool isEditMode /* false */, const bool saveLastTroop /* true */ )
     : spcursor( Assets::getImage( ICN::STRIP, 1 ) )
     , use_mini_sprite( miniSprites )
@@ -197,7 +219,41 @@ ArmyBar::ArmyBar( Army * ptr, const bool miniSprites, const bool readOnly, const
         SetBackground( { 43, 43 }, fheroes2::GetColorId( 0, 45, 0 ) );
     else {
         const fheroes2::Sprite & sprite = Assets::getImage( ICN::STRIP, 2 );
-        setSingleItemSize( { sprite.width(), sprite.height() } );
+        const int32_t slotCount = static_cast<int32_t>( Army::maximumTroopCount );
+
+        assert( slotCount > 0 );
+
+        if ( slotCount * sprite.width() + ( slotCount - 1 ) * fullSizeSlotSpacing <= fullSizeBarAreaWidth ) {
+            // Every slot fits the original artwork at its native size, so lay the bar out exactly as the original does.
+            _fullSizeSlotSize = { sprite.width(), sprite.height() };
+
+            setSingleItemSize( _fullSizeSlotSize );
+            setInBetweenItemsOffset( { fullSizeSlotSpacing, 0 } );
+        }
+        else {
+            // There are more slots than the artwork was drawn for. Pack the cells edge to edge over the same strip and
+            // scale each tile down to fit inside its cell, keeping the aspect ratio so the monsters are not distorted.
+            const int32_t cellWidth = fullSizeBarAreaWidth / slotCount;
+
+            _fullSizeSlotSize.width = cellWidth - fullSizeSlotSpacing;
+            _fullSizeSlotSize.height = _fullSizeSlotSize.width * sprite.height() / sprite.width();
+
+            assert( _fullSizeSlotSize.width > 0 && _fullSizeSlotSize.height > 0 && _fullSizeSlotSize.height <= sprite.height() );
+
+            setSingleItemSize( { cellWidth, sprite.height() } );
+            setInBetweenItemsOffset( { 0, 0 } );
+
+            _slotsAreScaled = true;
+        }
+
+        const fheroes2::Sprite & cursorSprite = Assets::getImage( ICN::STRIP, 1 );
+
+        if ( _fullSizeSlotSize.width != cursorSprite.width() || _fullSizeSlotSize.height != cursorSprite.height() ) {
+            spcursor.resize( _fullSizeSlotSize.width, _fullSizeSlotSize.height );
+            spcursor.reset();
+
+            fheroes2::Resize( cursorSprite, spcursor );
+        }
     }
 
     SetArmy( ptr );
@@ -243,22 +299,43 @@ void ArmyBar::SetBackground( const fheroes2::Size & sz, const uint8_t fillColor 
     fheroes2::DrawBorder( spcursor, 214 );
 }
 
+fheroes2::Rect ArmyBar::_slotRoi( const fheroes2::Rect & pos ) const
+{
+    return { pos.x + ( pos.width - _fullSizeSlotSize.width ) / 2, pos.y + ( pos.height - _fullSizeSlotSize.height ) / 2, _fullSizeSlotSize.width,
+             _fullSizeSlotSize.height };
+}
+
+void ArmyBar::_drawFullSizeSlot( const fheroes2::Image & slot, const fheroes2::Rect & pos, fheroes2::Image & output ) const
+{
+    const fheroes2::Rect roi = _slotRoi( pos );
+
+    if ( roi.width == slot.width() && roi.height == slot.height() ) {
+        fheroes2::Copy( slot, 0, 0, output, roi );
+
+        return;
+    }
+
+    fheroes2::Resize( slot, 0, 0, slot.width(), slot.height(), output, roi.x, roi.y, roi.width, roi.height );
+}
+
 void ArmyBar::RedrawBackground( const fheroes2::Rect & pos, fheroes2::Image & dstsf )
 {
     if ( use_mini_sprite ) {
         fheroes2::Copy( backsf, 0, 0, dstsf, pos );
-    }
-    else {
-        if ( can_change && !_saveLastTroop && _army->GetOccupiedSlotCount() == 0 ) {
-            // If none of army's slot is set within the Editor, then a default army will be applied at the game start.
-            fheroes2::ApplyPalette( Assets::getImage( ICN::STRIP, 2 ), 0, 0, dstsf, pos.x, pos.y, pos.width, pos.height, PAL::GetPalette( PAL::PaletteType::DARKENING ) );
 
-            const fheroes2::Text text( _( "Default\ntroop" ), fheroes2::FontType::normalWhite() );
-            text.drawInRoi( pos.x, pos.y + pos.height / 2 - 17, pos.width, dstsf, pos );
-        }
-        else {
-            fheroes2::Copy( Assets::getImage( ICN::STRIP, 2 ), 0, 0, dstsf, pos );
-        }
+        return;
+    }
+
+    _drawFullSizeSlot( Assets::getImage( ICN::STRIP, 2 ), pos, dstsf );
+
+    if ( can_change && !_saveLastTroop && _army->GetOccupiedSlotCount() == 0 ) {
+        // If none of army's slot is set within the Editor, then a default army will be applied at the game start.
+        const fheroes2::Rect roi = _slotRoi( pos );
+
+        fheroes2::ApplyPalette( dstsf, roi.x, roi.y, dstsf, roi.x, roi.y, roi.width, roi.height, PAL::GetPalette( PAL::PaletteType::DARKENING ) );
+
+        const fheroes2::Text text( _( "Default\ntroop" ), fheroes2::FontType::normalWhite() );
+        text.drawInRoi( roi.x, roi.y + roi.height / 2 - 17, roi.width, dstsf, roi );
     }
 }
 
@@ -291,13 +368,31 @@ void ArmyBar::RedrawItem( ArmyTroop & troop, const fheroes2::Rect & pos, bool se
         text.draw( pos.x + pos.width - text.width() - 3, pos.y + pos.height - text.height() + 2, dstsf );
     }
     else {
-        fheroes2::renderMonsterFrame( troop, dstsf, pos.getPosition() );
+        const fheroes2::Rect roi = _slotRoi( pos );
 
-        text.draw( pos.x + pos.width - text.width() - 3, pos.y + pos.height - text.height() + 1, dstsf );
+        if ( _slotsAreScaled ) {
+            // Compose the slot at its native size first: the monster sprite carries offsets that only make sense on a
+            // full-size tile, so it has to be placed before the tile is scaled down.
+            const fheroes2::Sprite & nativeSlot = Assets::getImage( ICN::STRIP, 2 );
+
+            fheroes2::Image composed( nativeSlot.width(), nativeSlot.height() );
+            composed._disableTransformLayer();
+            composed.reset();
+
+            fheroes2::renderMonsterFrame( troop, composed, { 0, 0 } );
+            fheroes2::Resize( composed, 0, 0, composed.width(), composed.height(), dstsf, roi.x, roi.y, roi.width, roi.height );
+        }
+        else {
+            fheroes2::renderMonsterFrame( troop, dstsf, roi.getPosition() );
+        }
+
+        text.draw( roi.x + roi.width - text.width() - 3, roi.y + roi.height - text.height() + 1, dstsf );
     }
 
     if ( selected ) {
-        spcursor.setPosition( pos.x, pos.y );
+        const fheroes2::Rect roi = use_mini_sprite ? pos : _slotRoi( pos );
+
+        spcursor.setPosition( roi.x, roi.y );
         spcursor.show();
     }
 }
@@ -311,6 +406,20 @@ void ArmyBar::ResetSelected()
 void ArmyBar::Redraw( fheroes2::Image & dstsf )
 {
     spcursor.hide();
+
+    if ( _slotsAreScaled ) {
+        // Scaled down slots no longer cover the slot grid baked into the dialog artwork, so repaint the strip that this
+        // bar occupies with the plain bar texture before drawing them. The bar spans exactly that strip because the
+        // cells are packed edge to edge over it.
+        const bool isEvilInterface = Settings::Get().isEvilInterfaceEnabled();
+        const fheroes2::Sprite & barBackground = Assets::getImage( isEvilInterface ? ICN::STRIP_BACKGROUND_EVIL : ICN::STRIP, isEvilInterface ? 0 : 11 );
+        const fheroes2::Rect & area = GetArea();
+
+        if ( area.width <= barBackground.width() && area.height <= barBackground.height() ) {
+            fheroes2::Copy( barBackground, 0, 0, dstsf, area.x, area.y, area.width, area.height );
+        }
+    }
+
     Interface::ItemsActionBar<ArmyTroop>::Redraw( dstsf );
 }
 

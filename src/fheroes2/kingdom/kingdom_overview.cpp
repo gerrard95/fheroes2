@@ -72,6 +72,10 @@ namespace
 {
     const int32_t scrollbarOffset = 626;
 
+    // Width the overview artwork leaves for an army bar in a hero or a castle row: in the original game five 41 px
+    // slots overlapping each other by one pixel.
+    const int32_t overviewArmyBarWidth = 5 * 41 - 4;
+
     bool needFadeIn{ false };
 
     std::string CapturedExtInfoString( const int resource, const PlayerColor color, const Funds & funds )
@@ -144,8 +148,8 @@ namespace
             hero = ptr;
 
             armyBar = std::make_unique<ArmyBar>( &hero->GetArmy(), true, false );
-            armyBar->SetBackground( { 41, 53 }, fheroes2::GetColorId( 72, 28, 0 ) );
-            armyBar->setTableSize( { 5, 1 } );
+            armyBar->SetBackground( { getMiniArmySlotWidth( overviewArmyBarWidth, -1, 41 ), 53 }, fheroes2::GetColorId( 72, 28, 0 ) );
+            armyBar->setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
             armyBar->setInBetweenItemsOffset( { -1, 0 } );
             armyBar->setTroopWindowOffsetY( -60 );
 
@@ -417,8 +421,8 @@ namespace
             castle = ptr;
 
             garrisonArmyBar = std::make_unique<ArmyBar>( &castle->GetArmy(), true, false );
-            garrisonArmyBar->SetBackground( { 41, 41 }, fheroes2::GetColorId( 40, 12, 0 ) );
-            garrisonArmyBar->setTableSize( { 5, 1 } );
+            garrisonArmyBar->SetBackground( { getMiniArmySlotWidth( overviewArmyBarWidth, -1, 41 ), 41 }, fheroes2::GetColorId( 40, 12, 0 ) );
+            garrisonArmyBar->setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
             garrisonArmyBar->setInBetweenItemsOffset( { -1, 0 } );
             garrisonArmyBar->setTroopWindowOffsetY( -60 );
 
@@ -435,8 +439,8 @@ namespace
 
             if ( hero ) {
                 heroArmyBar = std::make_unique<ArmyBar>( &hero->GetArmy(), true, false );
-                heroArmyBar->SetBackground( { 41, 41 }, fheroes2::GetColorId( 40, 12, 0 ) );
-                heroArmyBar->setTableSize( { 5, 1 } );
+                heroArmyBar->SetBackground( { getMiniArmySlotWidth( overviewArmyBarWidth, -1, 41 ), 41 }, fheroes2::GetColorId( 40, 12, 0 ) );
+                heroArmyBar->setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
                 heroArmyBar->setInBetweenItemsOffset( { -1, 0 } );
             }
             else {

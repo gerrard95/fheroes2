@@ -161,7 +161,10 @@ struct NeutralMonsterJoiningCondition final
 class Army final : public Troops, public Control
 {
 public:
-    static const size_t maximumTroopCount = 5;
+    // Number of troop slots in an army. The battlefield is Battle::Board::heightInCells rows tall and each stack occupies
+    // its own row, so this value must not exceed 9 (there is a static_assert enforcing this in battle_army.cpp).
+    // Keep it odd: Army::ArrangeForBattle places an upgraded neutral stack in the exact middle slot.
+    static const size_t maximumTroopCount = 7;
 
     static std::string SizeString( uint32_t );
     static std::string TroopSizeString( const Troop & );

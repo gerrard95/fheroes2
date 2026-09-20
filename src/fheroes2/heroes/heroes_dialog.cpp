@@ -313,9 +313,10 @@ int Heroes::OpenDialog( const bool readonly, const bool fade, const bool disable
 
     // In Editor mode we allow to edit army and remove all customized troops from the army.
     ArmyBar selectArmy( &_army, false, readonly, isEditor, !isEditor );
-    selectArmy.setTableSize( { 5, 1 } );
+    // The slot size and spacing are chosen by ArmyBar itself: they depend on Army::maximumTroopCount and on how much
+    // room the original artwork leaves for the bar.
+    selectArmy.setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
     selectArmy.setRenderingOffset( dst_pt );
-    selectArmy.setInBetweenItemsOffset( { 6, 0 } );
     selectArmy.Redraw( display );
 
     // Hero's secondary skills.

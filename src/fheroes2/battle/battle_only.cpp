@@ -70,6 +70,9 @@ namespace
     const std::array<int32_t, 2> moraleAndLuckOffsetX{ 34, 571 };
     const std::array<int32_t, 2> armyOffsetX{ 36, 381 };
 
+    // Width the dialog artwork reserves for one army bar, same strip as in the hero meeting screen.
+    const int32_t armyBarWidth{ 223 };
+
     constexpr fheroes2::Size terrainIconSize{ 32, 32 };
 
     const std::array<fheroes2::Rect, 2> primarySkillArea{ fheroes2::Rect{ 216, 51, 34, 133 }, fheroes2::Rect{ 389, 51, 34, 133 } };
@@ -331,7 +334,8 @@ bool Battle::Only::setup( const bool allowBackup, bool & resetBattleSetup )
         }
         else {
             info.ui.army = std::make_unique<ArmyBar>( &info.monster, true, false, true );
-            info.ui.army->setTableSize( { 5, 1 } );
+            info.ui.army->SetBackground( { getMiniArmySlotWidth( armyBarWidth, 2, 43 ), 43 }, fheroes2::GetColorId( 0, 45, 0 ) );
+            info.ui.army->setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
             info.ui.army->setRenderingOffset( { windowOffset.x + armyOffsetX[info.armyId], windowOffset.y + 267 } );
             info.ui.army->setInBetweenItemsOffset( { 2, 0 } );
         }
@@ -776,7 +780,8 @@ void Battle::Only::updateArmyUI( ArmyUI & ui, Heroes * hero, const fheroes2::Poi
     ui.artifact->setRenderingOffset( { offset.x + artifactArea[armyId].x, offset.y + 347 } );
 
     ui.army = std::make_unique<ArmyBar>( &hero->GetArmy(), true, false, true );
-    ui.army->setTableSize( { 5, 1 } );
+    ui.army->SetBackground( { getMiniArmySlotWidth( armyBarWidth, 2, 43 ), 43 }, fheroes2::GetColorId( 0, 45, 0 ) );
+    ui.army->setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
     ui.army->setRenderingOffset( { offset.x + armyOffsetX[armyId], offset.y + 267 } );
     ui.army->setInBetweenItemsOffset( { 2, 0 } );
 }

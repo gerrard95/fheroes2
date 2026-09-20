@@ -1951,12 +1951,16 @@ void Army::ArrangeForBattle( const Monster & monster, const uint32_t monstersCou
     else {
         Rand::PCG32 seededGen( world.GetMapSeed() + static_cast<uint32_t>( tileIndex ) );
 
-        stacksCount = Rand::GetWithGen( 3, 5, seededGen );
+        // In the original game this is 3 to 5, 5 being the number of slots an army has. The upper bound follows the
+        // number of slots so that neutral armies keep using the whole battlefield the way they do in the original.
+        // Pin it to 5 here to leave neutral armies untouched when the player's armies get more slots.
+        stacksCount = Rand::GetWithGen( 3, maximumTroopCount, seededGen );
     }
 
     ArrangeForBattle( monster, monstersCount, stacksCount );
 
     if ( allowUpgrade ) {
+        // The upgraded stack goes into the exact middle slot, which only exists if the number of slots is odd.
         assert( size() % 2 == 1 );
 
         // An upgraded stack can be located only in the center
@@ -1989,7 +1993,35 @@ OStreamBase & operator<<( OStreamBase & stream, const Army & army )
 
 IStreamBase & operator>>( IStreamBase & stream, Army & army )
 {
-    if ( const uint32_t size = stream.get32(); army.size() != size ) {
+    const uint32_t size = stream.get32();
+
+    if ( army.size() == size ) {
+        std::for_each( army.begin(), army.end(), [&stream]( Troop * troop ) {
+            assert( troop != nullptr );
+
+            stream >> *troop;
+        } );
+    }
+    else if ( size < army.size() && Game::GetVersionOfCurrentSaveFile() < FORMAT_VERSION_MOD_ARMY_SLOTS ) {
+        // This save was made before armies were extended to Army::maximumTroopCount slots, so it holds fewer troops
+        // than the army has slots. Read what is stored and leave the extra slots empty.
+        static_assert( LAST_SUPPORTED_FORMAT_VERSION < FORMAT_VERSION_MOD_ARMY_SLOTS, "Remove the logic below." );
+
+        auto iter = army.begin();
+
+        for ( uint32_t i = 0; i < size; ++i, ++iter ) {
+            assert( iter != army.end() && *iter != nullptr );
+
+            stream >> **iter;
+        }
+
+        std::for_each( iter, army.end(), []( Troop * troop ) {
+            assert( troop != nullptr );
+
+            troop->Reset();
+        } );
+    }
+    else {
         // Most likely the save file is corrupted.
         stream.setFail();
 
@@ -1997,13 +2029,6 @@ IStreamBase & operator>>( IStreamBase & stream, Army & army )
             assert( troop != nullptr );
 
             troop->Reset();
-        } );
-    }
-    else {
-        std::for_each( army.begin(), army.end(), [&stream]( Troop * troop ) {
-            assert( troop != nullptr );
-
-            stream >> *troop;
         } );
     }
 

@@ -158,16 +158,6 @@ public:
         // Do nothing.
     }
 
-    void RedrawBackground( const fheroes2::Rect & roi, fheroes2::Image & image ) override
-    {
-        if ( _cachedBackground.empty() ) {
-            _cachedBackground.resize( roi.width, roi.height );
-            fheroes2::Copy( image, roi.x, roi.y, _cachedBackground, 0, 0, roi.width, roi.height );
-        }
-
-        fheroes2::Blit( _cachedBackground, 0, 0, image, roi.x, roi.y, roi.width, roi.height );
-    }
-
     void RedrawItem( ArmyTroop & troop, const fheroes2::Rect & roi, bool isSelected, fheroes2::Image & image ) override
     {
         if ( !troop.isValid() )
@@ -206,9 +196,6 @@ public:
             spcursor.show();
         }
     }
-
-private:
-    fheroes2::Image _cachedBackground;
 };
 
 class MeetingArtifactBar final : public ArtifactsBar
@@ -429,26 +416,36 @@ void Heroes::MeetingDialog( Heroes & otherHero )
     fheroes2::ButtonSprite moveArmyToHero1 = createMoveButton( ICN::SWAP_ARROW_RIGHT_TO_LEFT, cur_pt.x + 472, cur_pt.y + 319, display );
     fheroes2::ButtonSprite swapArmies = createMoveButton( ICN::SWAP_ARROWS_CIRCULAR, cur_pt.x + 297, cur_pt.y + 268, display );
 
-    fheroes2::ImageRestorer armyCountBackgroundRestorerLeft( display, cur_pt.x + 36, cur_pt.y + 311, 223, 8 );
-    fheroes2::ImageRestorer armyCountBackgroundRestorerRight( display, cur_pt.x + 381, cur_pt.y + 311, 223, 8 );
+    const int32_t armyCountBackgroundWidth = 223;
+
+    fheroes2::ImageRestorer armyCountBackgroundRestorerLeft( display, cur_pt.x + 36, cur_pt.y + 311, armyCountBackgroundWidth, 8 );
+    fheroes2::ImageRestorer armyCountBackgroundRestorerRight( display, cur_pt.x + 381, cur_pt.y + 311, armyCountBackgroundWidth, 8 );
 
     // army
     dst_pt.x = cur_pt.x + 36;
     dst_pt.y = cur_pt.y + 267;
 
+    // The dialog artwork has five troop cells painted into it. Once an army has a different number of slots those cells
+    // no longer line up with the bar, so it packs its own cells edge to edge and makes them just wide enough to cover
+    // the painted grid completely. MeetingArmyBar therefore draws the plain filled cells of the base class.
+    const int32_t armySlotCount = static_cast<int32_t>( Army::maximumTroopCount );
+    const int32_t armySlotWidth = ( armyCountBackgroundWidth + armySlotCount - 1 ) / armySlotCount;
+
     MeetingArmyBar selectArmy1( &GetArmy() );
-    selectArmy1.setTableSize( { 5, 1 } );
+    selectArmy1.SetBackground( { armySlotWidth, 43 }, fheroes2::GetColorId( 0, 45, 0 ) );
+    selectArmy1.setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
     selectArmy1.setRenderingOffset( dst_pt );
-    selectArmy1.setInBetweenItemsOffset( { 2, 0 } );
+    selectArmy1.setInBetweenItemsOffset( { 0, 0 } );
     selectArmy1.Redraw( display );
 
     dst_pt.x = cur_pt.x + 381;
     dst_pt.y = cur_pt.y + 267;
 
     MeetingArmyBar selectArmy2( &otherHero.GetArmy() );
-    selectArmy2.setTableSize( { 5, 1 } );
+    selectArmy2.SetBackground( { armySlotWidth, 43 }, fheroes2::GetColorId( 0, 45, 0 ) );
+    selectArmy2.setTableSize( { static_cast<int32_t>( Army::maximumTroopCount ), 1 } );
     selectArmy2.setRenderingOffset( dst_pt );
-    selectArmy2.setInBetweenItemsOffset( { 2, 0 } );
+    selectArmy2.setInBetweenItemsOffset( { 0, 0 } );
     selectArmy2.Redraw( display );
 
     // artifact

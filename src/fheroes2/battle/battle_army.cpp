@@ -24,12 +24,14 @@
 #include "battle_army.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <numeric>
 
 #include "artifact.h"
 #include "artifact_info.h"
 #include "battle_arena.h"
+#include "battle_board.h"
 #include "battle_cell.h"
 #include "battle_troop.h"
 #include "heroes.h"
@@ -82,7 +84,28 @@ Battle::Force::Force( Army & parent, bool opposite, TroopsUidGenerator & generat
             continue;
         }
 
-        int32_t idx = army.isSpreadFormation() ? static_cast<int32_t>( i ) * 22 : 22 + static_cast<int32_t>( i ) * 11;
+        // Every stack occupies a row of its own, so an army can never have more slots than the battlefield has rows.
+        static_assert( Army::maximumTroopCount <= static_cast<size_t>( Board::heightInCells ), "An army has more slots than the battlefield has rows." );
+
+        // Spread formation stretches the stacks evenly over the full height of the battlefield, grouped formation packs
+        // them into adjacent rows centred vertically. For an army of 5 both formulas reproduce the original placement
+        // (rows 0, 2, 4, 6, 8 and rows 2 - 6 respectively).
+        const int32_t row = [this, i]() -> int32_t {
+            const size_t slotCount = army.Size();
+            assert( slotCount > 0 && slotCount <= static_cast<size_t>( Board::heightInCells ) );
+
+            if ( !army.isSpreadFormation() ) {
+                return static_cast<int32_t>( ( static_cast<size_t>( Board::heightInCells ) - slotCount ) / 2 + i );
+            }
+
+            if ( slotCount == 1 ) {
+                return Board::heightInCells / 2;
+            }
+
+            return static_cast<int32_t>( i * ( static_cast<size_t>( Board::heightInCells ) - 1 ) / ( slotCount - 1 ) );
+        }();
+
+        int32_t idx = row * Board::widthInCells;
 
         if ( opposite ) {
             idx += ( troop->isWide() ? 9 : 10 );
