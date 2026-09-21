@@ -444,7 +444,7 @@ namespace
         case BUILD_WEL2:
             return _( "Farm" );
         case DWELLING_MONSTER1:
-            return _( "Thatched Hut" );
+            return _( "Crossbow Range" );
         case DWELLING_MONSTER2:
             return _( "Archery Range" );
         case DWELLING_UPGRADE2:
@@ -694,7 +694,7 @@ namespace
         case BUILD_SPEC:
             return _( "The Fortifications increase the toughness of the walls, increasing the number of turns it takes to knock them down." );
         case BUILD_WEL2:
-            return _( "The Farm increases production of Peasants by %{count} per week." );
+            return _( "The Farm increases the income of the town by %{count} gold per day." );
         default:
             break;
         }

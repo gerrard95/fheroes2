@@ -40,6 +40,7 @@
 uint32_t Monster::GetMissileICN( uint32_t monsterID )
 {
     switch ( monsterID ) {
+    case Monster::PEASANT: // Crossbowman
     case Monster::ARCHER:
     case Monster::RANGER:
         return ICN::ARCH_MSL;
@@ -173,7 +174,7 @@ uint32_t Monster::GetRNDSize() const
     // Check for outliers
     switch ( id ) {
     case PEASANT:
-        result = 80;
+        result = 25;
         break;
     case ROGUE:
         result = 40;
@@ -591,7 +592,6 @@ Monster Monster::Rand( const LevelType type )
 Monster::LevelType Monster::GetRandomUnitLevel() const
 {
     switch ( id ) {
-    case PEASANT:
     case ARCHER:
     case GOBLIN:
     case ORC:
@@ -622,6 +622,7 @@ Monster::LevelType Monster::GetRandomUnitLevel() const
     case RANDOM_MONSTER_LEVEL_2:
         return LevelType::LEVEL_2;
 
+    case PEASANT: // Crossbowman: classify random encounters by strength, not dwelling slot.
     case SWORDSMAN:
     case MASTER_SWORDSMAN:
     case CAVALRY:

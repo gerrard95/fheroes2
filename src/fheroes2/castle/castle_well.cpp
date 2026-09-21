@@ -527,7 +527,7 @@ void Castle::_wellRedrawBackground( fheroes2::Image & background ) const
             monsterGrown += _constructedBuildings & BUILD_WELL ? GetGrownWell() : 0;
 
             if ( DWELLING_MONSTER1 & dwellingType ) {
-                monsterGrown += _constructedBuildings & BUILD_WEL2 ? GetGrownWel2() : 0;
+                monsterGrown += _constructedBuildings & BUILD_WEL2 ? GetGrownWel2( _race ) : 0;
             }
 
             text.set( _( "Growth" ), statsFontType );

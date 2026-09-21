@@ -144,7 +144,7 @@ namespace
                 ICN::EELEM,    ICN::AELEM,    ICN::FELEM,    ICN::WELEM,    ICN::UNKNOWN,  ICN::UNKNOWN,  ICN::UNKNOWN,  ICN::UNKNOWN,  ICN::UNKNOWN };
 
         const char * binFileName[Monster::MONSTER_COUNT]
-            = { "UNKNOWN",      "PEAS_FRM.BIN", "ARCHRFRM.BIN", "ARCHRFRM.BIN", "PIKMNFRM.BIN", "PIKMNFRM.BIN", "SWRDSFRM.BIN", "SWRDSFRM.BIN", "CVLRYFRM.BIN",
+            = { "UNKNOWN",      "XBOWFRM.BIN",  "ARCHRFRM.BIN", "ARCHRFRM.BIN", "PIKMNFRM.BIN", "PIKMNFRM.BIN", "SWRDSFRM.BIN", "SWRDSFRM.BIN", "CVLRYFRM.BIN",
                 "CVLR2FRM.BIN", "PALADFRM.BIN", "PALADFRM.BIN", "GOBLNFRM.BIN", "ORC__FRM.BIN", "ORC__FRM.BIN", "WOLF_FRM.BIN", "OGRE_FRM.BIN", "OGRE_FRM.BIN",
                 "TROLLFRM.BIN", "TROLLFRM.BIN", "CYCLOFRM.BIN", "SPRITFRM.BIN", "DWARFFRM.BIN", "DWARFFRM.BIN", "ELF__FRM.BIN", "ELF__FRM.BIN", "DRUIDFRM.BIN",
                 "DRUIDFRM.BIN", "UNICOFRM.BIN", "PHOENFRM.BIN", "CENTRFRM.BIN", "GARGLFRM.BIN", "GRIFFFRM.BIN", "MINOTFRM.BIN", "MINOTFRM.BIN", "HYDRAFRM.BIN",
@@ -156,7 +156,7 @@ namespace
         const fheroes2::MonsterSound monsterSounds[Monster::MONSTER_COUNT] = {
             // melee attack | death | movement | wince | ranged attack | takeoff | landing | explosion
             { M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN }, // Unknown Monster
-            { M82::PSNTATTK, M82::PSNTKILL, M82::PSNTMOVE, M82::PSNTWNCE, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN }, // Peasant
+            { M82::ARCHATTK, M82::ARCHKILL, M82::ARCHMOVE, M82::ARCHWNCE, M82::ARCHSHOT, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN }, // Crossbowman (Peasant slot)
             { M82::ARCHATTK, M82::ARCHKILL, M82::ARCHMOVE, M82::ARCHWNCE, M82::ARCHSHOT, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN }, // Archer
             { M82::ARCHATTK, M82::ARCHKILL, M82::ARCHMOVE, M82::ARCHWNCE, M82::ARCHSHOT, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN }, // Ranger
             { M82::PIKEATTK, M82::PIKEKILL, M82::PIKEMOVE, M82::PIKEWNCE, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN, M82::UNKNOWN }, // Pikeman
@@ -233,7 +233,7 @@ namespace
         const fheroes2::MonsterBattleStats monsterBattleStats[Monster::MONSTER_COUNT] = {
             // attack | defence | damageMin | damageMax | hp | speed | shots | baseStrength | abilities | weaknesses
             { 0, 0, 0, 0, 0, Speed::VERYSLOW, 0, 0, {}, {} }, // Unknown Monster
-            { 1, 1, 1, 1, 1, Speed::VERYSLOW, 0, 0, {}, {} }, // Peasant
+            { 7, 7, 4, 8, 20, Speed::AVERAGE, 12, 0, {}, {} }, // Crossbowman (Peasant slot)
             { 5, 3, 2, 3, 10, Speed::VERYSLOW, 12, 0, {}, {} }, // Archer
             { 5, 3, 2, 3, 10, Speed::AVERAGE, 24, 0, {}, {} }, // Ranger
             { 5, 9, 3, 4, 15, Speed::AVERAGE, 0, 0, {}, {} }, // Pikeman
@@ -309,7 +309,7 @@ namespace
         const fheroes2::MonsterGeneralStats monsterGeneralStats[Monster::MONSTER_COUNT]
             = { // name | plural name | growth | race | level | cost
                 { gettext_noop( "Unknown Monster" ), gettext_noop( "Unknown Monsters" ), 0, Race::NONE, 0, { 0, 0, 0, 0, 0, 0, 0 } },
-                { gettext_noop( "Peasant" ), gettext_noop( "Peasants" ), 12, Race::KNGT, 1, { 20, 0, 0, 0, 0, 0, 0 } },
+                { gettext_noop( "Crossbowman" ), gettext_noop( "Crossbowmen" ), 5, Race::KNGT, 1, { 250, 0, 0, 0, 0, 0, 0 } },
                 { gettext_noop( "Archer" ), gettext_noop( "Archers" ), 8, Race::KNGT, 2, { 150, 0, 0, 0, 0, 0, 0 } },
                 { gettext_noop( "Ranger" ), gettext_noop( "Rangers" ), 8, Race::KNGT, 2, { 200, 0, 0, 0, 0, 0, 0 } },
                 { gettext_noop( "Pikeman" ), gettext_noop( "Pikemen" ), 5, Race::KNGT, 3, { 200, 0, 0, 0, 0, 0, 0 } },

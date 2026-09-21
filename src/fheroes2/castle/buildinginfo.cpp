@@ -294,7 +294,8 @@ std::string BuildingInfo::getBuildingDescription( const int race, const uint32_t
             StringReplace( description, "%{count}", Castle::GetGrownWell() );
             break;
         case BUILD_WEL2:
-            StringReplace( description, "%{count}", Castle::GetGrownWel2() );
+            StringReplace( description, "%{count}",
+                           race == Race::KNGT ? ProfitConditions::FromBuilding( BUILD_WEL2, race ).gold : Castle::GetGrownWel2( race ) );
             break;
         case BUILD_MOAT:
             StringReplace( description, "%{count}", GameStatic::GetBattleMoatReduceDefense() );
@@ -678,7 +679,7 @@ void DwellingsBar::RedrawItem( DwellingItem & dwl, const fheroes2::Rect & pos, f
         grown += Castle::GetGrownWell();
     }
     if ( castle.isBuild( BUILD_WEL2 ) && DWELLING_MONSTER1 == dwType ) {
-        grown += Castle::GetGrownWel2();
+        grown += Castle::GetGrownWel2( castle.GetRace() );
     }
 
     // Dwelling's growth.

@@ -871,7 +871,7 @@ void Castle::ActionNewWeek()
             }
 
             if ( ( dwellingId == DWELLING_MONSTER1 ) && ( _constructedBuildings & BUILD_WEL2 ) ) {
-                growth += GetGrownWel2();
+                growth += GetGrownWel2( _race );
             }
 
             if ( isNeutral ) {
@@ -2195,9 +2195,10 @@ uint32_t Castle::GetGrownWell()
     return GameStatic::GetCastleGrownWell();
 }
 
-uint32_t Castle::GetGrownWel2()
+uint32_t Castle::GetGrownWel2( const int race )
 {
-    return GameStatic::GetCastleGrownWel2();
+    // The Knight's Farm produces gold instead (see ProfitConditions::FromBuilding).
+    return race == Race::KNGT ? 0 : GameStatic::GetCastleGrownWel2();
 }
 
 uint32_t Castle::GetGrownWeekOf()
@@ -2240,7 +2241,9 @@ void Castle::_joinRNDArmy()
         count += Rand::Get( 5, 7 );
     }
     else {
-        count += Rand::Get( 8, 15 );
+        // Crossbowmen (the Knight's dwelling 1 in this mod) are far stronger than other level 1 units:
+        // keep this the weakest reinforcement, below 5-7 Archers.
+        count += ( _race == Race::KNGT ) ? Rand::Get( 1, 2 ) : Rand::Get( 8, 15 );
     }
 
     _army.JoinTroop( Monster( _race, dwellingType ), count, false );
@@ -2534,7 +2537,7 @@ std::string Castle::GetDescriptionBuilding( const uint32_t buildingType ) const
         break;
 
     case BUILD_WEL2:
-        StringReplace( res, "%{count}", GetGrownWel2() );
+        StringReplace( res, "%{count}", _race == Race::KNGT ? ProfitConditions::FromBuilding( BUILD_WEL2, _race ).gold : GetGrownWel2( _race ) );
         break;
 
     case BUILD_CASTLE: {

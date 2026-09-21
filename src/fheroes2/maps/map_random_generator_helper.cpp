@@ -116,7 +116,7 @@ namespace
         { MP2::OBJ_FIRE_ALTAR, 5000 },
         { MP2::OBJ_GOBLIN_HUT, 1500 },
         { MP2::OBJ_HALFLING_HOLE, 1500 },
-        { MP2::OBJ_PEASANT_HUT, minimalTreasureValue },
+        { MP2::OBJ_PEASANT_HUT, 2000 }, // Crossbowman Hut: valued like the Archer's House.
         { MP2::OBJ_RUINS, 5000 },
         { MP2::OBJ_TREE_CITY, 1500 },
         { MP2::OBJ_TREE_HOUSE, 1500 },

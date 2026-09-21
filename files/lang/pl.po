@@ -12910,6 +12910,26 @@ msgstr "Nieznana siła jest wskrzeszana…"
 #~ msgid "AI"
 #~ msgstr "Komputer"
 
+#: src/fheroes2/monster/monster_info.cpp
+msgid "Crossbowman"
+msgstr "Kusznik"
+
+#: src/fheroes2/monster/monster_info.cpp
+msgid "Crossbowmen"
+msgstr "Kusznicy"
+
+#: src/fheroes2/castle/castle_building_info.cpp
+msgid "Crossbow Range"
+msgstr "Strzelnica kuszników"
+
+#: src/fheroes2/castle/castle_building_info.cpp
+msgid "The Farm increases the income of the town by %{count} gold per day."
+msgstr "Farma zwiększa dochody miasta o %{count} sztuk złota na dzień."
+
+#: src/fheroes2/maps/mp2.cpp
+msgid "Crossbowman Hut"
+msgstr "Chata kuszników"
+
 #~ msgid "Click to set this hero to be AI-controlled."
 #~ msgstr ""
 #~ "Kliknij, aby ustawić tego bohatera jako kontrolowanego przez komputer."

@@ -135,7 +135,7 @@ namespace Bin_Info
 
         // We change all projectile start positions to match the last projectile position in shooting animation,
         // this position will be used to calculate the projectile path, but will not be used in rendering.
-        if ( monsterID == Monster::ARCHER || monsterID == Monster::RANGER ) {
+        if ( monsterID == Monster::PEASANT || monsterID == Monster::ARCHER || monsterID == Monster::RANGER ) {
             projectileOffset[0].x -= 30;
             projectileOffset[0].y += 5;
             projectileOffset[1].x -= 46;
@@ -377,7 +377,7 @@ namespace Bin_Info
         }
 
         // Archers/Rangers needs their 'x' offset in moving animations to be bigger by 1px to avoid sprite shift in Well and during diagonal movement.
-        if ( monsterID == Monster::ARCHER || monsterID == Monster::RANGER ) {
+        if ( monsterID == Monster::PEASANT || monsterID == Monster::ARCHER || monsterID == Monster::RANGER ) {
             for ( const int animType : { MOVE_MAIN, MOVE_ONE } ) {
                 for ( int & xOffset : frameXOffset[animType] ) {
                     ++xOffset;

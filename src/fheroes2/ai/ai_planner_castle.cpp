@@ -66,6 +66,12 @@ namespace
     {
         static const std::vector<BuildOrder> standard = { { BUILD_CASTLE, 1 }, { BUILD_STATUE, 1 }, { BUILD_MARKETPLACE, 1 } };
         static const std::vector<BuildOrder> warlock = { { BUILD_CASTLE, 1 }, { BUILD_STATUE, 1 }, { BUILD_MARKETPLACE, 1 }, { BUILD_SPEC, 1 } };
+        // The Knight's Farm produces gold in this mod.
+        static const std::vector<BuildOrder> knight = { { BUILD_CASTLE, 1 }, { BUILD_STATUE, 1 }, { BUILD_MARKETPLACE, 1 }, { BUILD_WEL2, 1 } };
+
+        if ( type == Race::KNGT ) {
+            return knight;
+        }
 
         return ( type == Race::WRLK ) ? warlock : standard;
     }
@@ -93,14 +99,14 @@ namespace
                 { BUILD_THIEVESGUILD, 10 }, { BUILD_MAGEGUILD2, 3 },  { BUILD_MAGEGUILD3, 4 },  { BUILD_MAGEGUILD4, 5 },  { BUILD_MAGEGUILD5, 5 },
                 { BUILD_SHIPYARD, 4 } };
 
-        // De-prioritizing dwelling 5 (you can reach 6 without it), 1 and upgrades of 3 and 4
-        // Well, tavern and Archery upgrade are more important
+        // De-prioritizing dwelling 5 (you can reach 6 without it) and upgrades of 3 and 4
+        // Well, tavern and Archery upgrade are more important; Crossbowmen (dwelling 1) are the best value for gold
         static const std::vector<BuildOrder> knightBuildOrder
             = { { BUILD_CASTLE, 2 },      { BUILD_STATUE, 1 },      { BUILD_MARKETPLACE, 1 },   { DWELLING_UPGRADE6, 2 }, { DWELLING_MONSTER6, 1 },
                 { DWELLING_UPGRADE5, 2 }, { DWELLING_MONSTER5, 2 }, { DWELLING_UPGRADE4, 2 },   { DWELLING_MONSTER4, 1 }, { DWELLING_UPGRADE3, 2 },
-                { DWELLING_MONSTER3, 1 }, { DWELLING_UPGRADE2, 1 }, { DWELLING_MONSTER2, 3 },   { DWELLING_MONSTER1, 4 }, { BUILD_WELL, 1 },
+                { DWELLING_MONSTER3, 1 }, { DWELLING_UPGRADE2, 1 }, { DWELLING_MONSTER2, 3 },   { DWELLING_MONSTER1, 1 }, { BUILD_WELL, 1 },
                 { BUILD_TAVERN, 1 },      { BUILD_MAGEGUILD1, 2 },  { BUILD_MAGEGUILD2, 3 },    { BUILD_MAGEGUILD3, 5 },  { BUILD_MAGEGUILD4, 5 },
-                { BUILD_MAGEGUILD5, 5 },  { BUILD_SPEC, 5 },        { BUILD_THIEVESGUILD, 10 }, { BUILD_WEL2, 20 },       { BUILD_SHIPYARD, 4 } };
+                { BUILD_MAGEGUILD5, 5 },  { BUILD_SPEC, 5 },        { BUILD_THIEVESGUILD, 10 }, { BUILD_SHIPYARD, 4 } };
 
         // Priority on Dwellings 5/6 and Mage guild level 2
         static const std::vector<BuildOrder> necromancerBuildOrder

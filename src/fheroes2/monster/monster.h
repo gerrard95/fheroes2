@@ -54,7 +54,7 @@ public:
     {
         UNKNOWN,
 
-        PEASANT,
+        PEASANT, // Crossbowman in this mod. Keep the original ID for maps and saved armies.
         ARCHER,
         RANGER,
         PIKEMAN,

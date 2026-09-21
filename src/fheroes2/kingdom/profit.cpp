@@ -42,6 +42,11 @@ Funds ProfitConditions::FromBuilding( uint32_t building, int race )
         if ( race == Race::WRLK )
             return Funds( Cost{ 500, 0, 0, 0, 0, 0, 0 } );
         break;
+    case BUILD_WEL2:
+        // In this mod the Knight's Farm produces gold instead of extra Crossbowmen.
+        if ( race == Race::KNGT )
+            return Funds( Cost{ 200, 0, 0, 0, 0, 0, 0 } );
+        break;
     default:
         break;
     }

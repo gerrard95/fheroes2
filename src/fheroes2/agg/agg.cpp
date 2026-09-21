@@ -28,6 +28,7 @@
 #include "agg.h"
 #include "agg_file.h"
 #include "dir.h"
+#include "serialize.h"
 #include "settings.h"
 #include "tools.h"
 
@@ -39,6 +40,30 @@ namespace
 
 std::vector<uint8_t> AGG::getDataFromAggFile( const std::string & key, const bool ignoreExpansion )
 {
+    // The replacement keeps its own assets, so installing a Crossbowman never changes Archers.
+    // Battle sprites and their frame table form one pack; never mix custom frames with Archer sequences.
+    if ( key == "PEASANT.ICN" || key == "MONH0000.ICN" || key == "XBOWFRM.BIN" ) {
+        const bool isBattleSprite = ( key == "PEASANT.ICN" );
+        const bool isAnimation = ( key == "XBOWFRM.BIN" );
+        std::string spritePath;
+        std::string animationPath;
+        const bool hasPack = Settings::findFile( "files/crossbowman", "CROSSBOW.ICN", spritePath )
+                             && Settings::findFile( "files/crossbowman", "XBOWFRM.BIN", animationPath );
+        std::string path;
+        const char * fileName = isAnimation ? "XBOWFRM.BIN" : ( isBattleSprite ? "CROSSBOW.ICN" : "CROSSBOWH.ICN" );
+        if ( hasPack && Settings::findFile( "files/crossbowman", fileName, path ) ) {
+            StreamFile file;
+            if ( file.open( path, "rb" ) ) {
+                std::vector<uint8_t> data = file.getRaw( 0 );
+                if ( !data.empty() ) {
+                    return data;
+                }
+            }
+        }
+        // A complete, animated placeholder until the custom sprite pack is installed.
+        return getDataFromAggFile( isAnimation ? "ARCHRFRM.BIN" : ( isBattleSprite ? "ARCHER.ICN" : "MONH0001.ICN" ), ignoreExpansion );
+    }
+
     if ( !ignoreExpansion && heroes2x_agg.isGood() ) {
         // Make sure that the below container is not const and not a reference
         // so returning it from the function will invoke a move constructor instead of copy constructor.

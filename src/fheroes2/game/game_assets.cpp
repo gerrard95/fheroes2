@@ -2933,6 +2933,15 @@ namespace
             break;
         }
         case ICN::MONS32:
+            if ( _icnVsSprite[id].size() > 1 ) {
+                const fheroes2::Sprite & source = Assets::getImage( ICN::PEASANT, 1 );
+                if ( !source.empty() ) {
+                    fheroes2::Sprite & icon = _icnVsSprite[id][0];
+                    icon.resize( source.width() * 32 / source.height(), 32 );
+                    fheroes2::Resize( source, icon );
+                    icon.setPosition( 0, 0 );
+                }
+            }
             if ( _icnVsSprite[id].size() > 4 ) { // Veteran Pikeman
                 fheroes2::Sprite & modified = _icnVsSprite[id][4];
 
@@ -4749,6 +4758,19 @@ namespace
         case ICN::MINI_MONSTER_SHADOW: {
             // It doesn't matter which image is being called. We are generating both of them at the same time.
             loadICN( ICN::MINIMON );
+            if ( _icnVsSprite[ICN::MINIMON].size() >= 18 ) {
+                for ( size_t i = 0; i < 9; ++i ) {
+                    // Idle frames 1-4 are shared by the custom pack and its Archer fallback.
+                    const fheroes2::Sprite & source = Assets::getImage( ICN::PEASANT, 1 + i % 4 );
+                    if ( !source.empty() ) {
+                        const fheroes2::Sprite & original = _icnVsSprite[ICN::MINIMON][9 + i];
+                        fheroes2::Sprite & icon = _icnVsSprite[ICN::MINIMON][i];
+                        icon.resize( source.width() * 32 / source.height(), 32 );
+                        fheroes2::Resize( source, icon );
+                        icon.setPosition( original.x() + ( original.width() - icon.width() ) / 2, original.y() + original.height() - icon.height() );
+                    }
+                }
+            }
 
             // Minotaur King original Adventure map sprite has blue armlets. We make them gold to correspond the ICN::MINOTAU2.
             if ( _icnVsSprite[ICN::MINIMON].size() > 303 ) {

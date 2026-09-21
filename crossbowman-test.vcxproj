@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Reuse the game's settings and existing object files; build the game first. -->
+  <Import Project="fheroes2-vs2019.vcxproj" />
+  <PropertyGroup>
+    <TargetName>crossbowman-test</TargetName>
+    <TargetPath>$(OutDir)crossbowman-test.exe</TargetPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Remove="@(ClCompile)" />
+    <ClCompile Include="script\tests\crossbowman.cpp" />
+    <Object Include="build\$(Platform)\$(Configuration)\fheroes2-vs2019\*.obj"
+            Exclude="build\$(Platform)\$(Configuration)\fheroes2-vs2019\fheroes2.obj" />
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <UndefinePreprocessorDefinitions>NDEBUG;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

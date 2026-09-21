@@ -936,7 +936,8 @@ namespace Maps
             count += isFirstLoad ? Rand::Get( 20, 40 ) : Rand::Get( 5, 10 );
             break;
         case MP2::OBJ_PEASANT_HUT:
-            count += isFirstLoad ? Rand::Get( 20, 50 ) : Rand::Get( 5, 10 );
+            // Crossbowmen (Peasant slot) join for free; counts match the Archer's House in total strength.
+            count += isFirstLoad ? Rand::Get( 3, 8 ) : Rand::Get( 1, 2 );
             break;
         case MP2::OBJ_EXCAVATION:
         case MP2::OBJ_TREE_HOUSE:

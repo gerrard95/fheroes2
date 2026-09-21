@@ -261,7 +261,7 @@ const char * MP2::StringObject( MapObjectType objectType, const int count )
     case OBJ_NON_ACTION_DWARF_COTTAGE:
         return _( "Dwarf Cottage" );
     case OBJ_NON_ACTION_PEASANT_HUT:
-        return _( "Peasant Hut" );
+        return _( "Crossbowman Hut" ); // Crossbowmen replace Peasants in this mod.
     case OBJ_NON_ACTION_STABLES:
         return _( "Stables" );
     case OBJ_NON_ACTION_ALCHEMIST_TOWER:

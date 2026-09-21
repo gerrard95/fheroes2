@@ -589,6 +589,10 @@ Funds Kingdom::GetIncome( int type /* = INCOME_ALL */ ) const
             // dungeon for warlock
             if ( castle->isBuild( BUILD_SPEC ) && Race::WRLK == castle->GetRace() )
                 totalIncome += ProfitConditions::FromBuilding( BUILD_SPEC, Race::WRLK );
+
+            // farm for knight
+            if ( castle->isBuild( BUILD_WEL2 ) && Race::KNGT == castle->GetRace() )
+                totalIncome += ProfitConditions::FromBuilding( BUILD_WEL2, Race::KNGT );
         }
     }
 

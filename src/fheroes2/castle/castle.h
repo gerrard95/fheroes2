@@ -363,7 +363,7 @@ public:
     }
 
     static uint32_t GetGrownWell();
-    static uint32_t GetGrownWel2();
+    static uint32_t GetGrownWel2( const int race );
     static uint32_t GetGrownWeekOf();
     static uint32_t GetGrownMonthOf();
 

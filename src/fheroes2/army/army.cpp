@@ -127,7 +127,7 @@ namespace
         case 1:
             switch ( monster.GetID() ) {
             case Monster::PEASANT:
-                return { 30, 50 };
+                return { 3, 5 }; // Crossbowmen replace Peasants in this mod.
             case Monster::GOBLIN:
                 return { 15, 25 };
             case Monster::SPRITE:
