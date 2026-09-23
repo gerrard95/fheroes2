@@ -153,8 +153,8 @@ void AI::OptimizeTroopsOrder( Army & army )
 
     const int32_t slotCount = static_cast<int32_t>( Army::maximumTroopCount );
 
-    const auto takeSlot = [&isSlotTaken, &slotOrder, slotCount]( const int32_t slot ) {
-        if ( slot < 0 || slot >= slotCount || isSlotTaken[slot] ) {
+    const auto takeSlot = [&isSlotTaken, &slotOrder]( const int32_t slot ) {
+        if ( slot < 0 || slot >= static_cast<int32_t>( isSlotTaken.size() ) || isSlotTaken[slot] ) {
             return;
         }
 
