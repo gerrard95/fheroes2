@@ -111,6 +111,14 @@ tasks.register('copyH2D', Copy) {
     into 'src/main/assets/files/data'
 }
 
+tasks.register('copyCrossbowman', Copy) {
+    from('../../files/crossbowman') {
+        include '*.ICN'
+        include '*.BIN'
+    }
+    into 'src/main/assets/files/crossbowman'
+}
+
 tasks.register('copyTimidity', Copy) {
     from('../../files/timidity') {
         include 'instruments/*.pat'
@@ -127,7 +135,7 @@ tasks.register('copyTranslations', Copy) {
 }
 
 tasks.register('generateAssetsDigest') {
-    dependsOn copyFH2M, copyH2D, copyTimidity, copyTranslations
+    dependsOn copyFH2M, copyH2D, copyCrossbowman, copyTimidity, copyTranslations
 
     doLast {
         final java.nio.file.Path assetsDirPath = layout.projectDirectory.getAsFile()
